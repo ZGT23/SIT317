@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pigeon Finance - Smart Student Budgeting</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #e8f5e8, #f0f8f0);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #fff;
+            min-height: 100vh;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .status-bar {
+            height: 30px;
+            background: linear-gradient(135deg, #10b981, #34d399);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .screen {
+            display: none;
+            min-height: calc(100vh - 30px);
+            position: relative;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .content {
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .add-button {
+            background: linear-gradient(135deg, #10b981, #34d399);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .safe-to-spend {
+            background: linear-gradient(135deg, #10b981, #34d399);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .amount {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .label {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .feature {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            cursor: pointer;
+        }
+
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #10b981, #34d399);
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .item:last-child {
+            border-bottom: none;
+        }
+
+        .item-name {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .item-amount {
+            font-weight: bold;
+            color: #10b981;
+        }
+
+        .item-date {
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 400px;
+            height: 60px;
+            background: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .tab {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #999;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .tab.active {
+            color: #10b981;
+        }
+
+        .tab-icon {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 4px;
+            background: currentColor;
+            border-radius: 4px;
+        }
+
+        .bubble {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #10b981, #34d399);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+            cursor: pointer;
+            z-index: 999;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            width: 90%;
+            max-width: 350px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #999;
+            cursor: pointer;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .category-btn {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            background: white;
+            font-size: 12px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .category-btn.selected {
+            background: #10b981;
+            color: white;
+            border-color: #10b981;
+        }
+
+        .button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #10b981, #34d399);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .button.secondary {
+            background: transparent;
+            color: #10b981;
+            border: 2px solid #10b981;
+        }
+
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .calendar-day.today {
+            background: #10b981;
+            color: white;
+        }
+
+        .calendar-day.has-event {
+            background: #f0f0f0;
+            position: relative;
+        }
+
+        .calendar-day.has-event::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background: #10b981;
+            border-radius: 50%;
+        }
+
+        .settings-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .settings-item:last-child {
+            border-bottom: none;
+        }
+
+        .switch {
+            width: 50px;
+            height: 30px;
+            background: #ddd;
+            border-radius: 15px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .switch.active {
+            background: #10b981;
+        }
+
+        .switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .switch.active::after {
+            transform: translateX(20px);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .action-btn {
+            padding: 4px 8px;
+            font-size: 9px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .pause-btn {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .cancel-btn {
+            background: #ef4444;
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-icon {
+            width: 60px;
+            height: 60px;
+            background: #f0f0f0;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #ccc;
+        }
+
+        .login-form {
+            max-width: 300px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #10b981, #34d399);
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .form-title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .form-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .form-link a {
+            color: #10b981;
+            text-decoration: none;
+        }
+
+        .breakdown {
+            margin-top: 20px;
+        }
+
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .breakdown-label {
+            color: #666;
+        }
+
+        .breakdown-value {
+            color: #333;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <span>9:41</span>
+            <span>Pigeon Finance</span>
+            <span>100%</span>
+        </div>
+
+        <!-- Login Screen -->
+        <div class="screen active" id="login-screen">
+            <div class="login-form">
+                <div class="logo">🐦</div>
+                <div class="form-title">Welcome Back</div>
+                <div class="input-group">
+                    <input type="text" class="input" placeholder="Username" id="username">
+                </div>
+                <div class="input-group">
+                    <input type="password" class="input" placeholder="Password" id="password">
+                </div>
+                <button class="button" onclick="login()">Sign In</button>
+                <div class="form-link">
+                    Don't have an account? <a href="#" onclick="showScreen('signup-screen')">Sign Up</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sign Up Screen -->
+        <div class="screen" id="signup-screen">
+            <div class="login-form">
+                <div class="logo">🐦</div>
+                <div class="form-title">Create Account</div>
+                <div class="input-group">
+                    <input type="text" class="input" placeholder="Full Name" id="fullname">
+                </div>
+                <div class="input-group">
+                    <input type="email" class="input" placeholder="Email" id="email">
+                </div>
+                <div class="input-group">
+                    <input type="password" class="input" placeholder="Create Password" id="new-password">
+                </div>
+                <div class="input-group">
+                    <input type="password" class="input" placeholder="Confirm Password" id="confirm-password">
+                </div>
+                <button class="button" onclick="signup()">Sign Up</button>
+                <div class="form-link">
+                    Already have an account? <a href="#" onclick="showScreen('login-screen')">Sign In</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Screen -->
+        <div class="screen" id="dashboard-screen">
+            <div class="content">
+                <div class="safe-to-spend">
+                    <div class="amount" id="safe-to-spend-amount">$262</div>
+                    <div class="label">Safe to Spend This Week</div>
+                    <div class="breakdown">
+                        <div class="breakdown-item">
+                            <span class="breakdown-label">Weekly Income</span>
+                            <span class="breakdown-value" id="weekly-income">$500</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span class="breakdown-label">Fixed Bills</span>
+                            <span class="breakdown-value">-$200</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span class="breakdown-label">Subscriptions</span>
+                            <span class="breakdown-value">-$38</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-grid">
+                    <div class="feature" onclick="showModal('add-bill-modal')">
+                        <div class="feature-icon">📄</div>
+                        <div style="font-size: 12px;">Add Bill</div>
+                    </div>
+                    <div class="feature" onclick="showModal('add-subscription-modal')">
+                        <div class="feature-icon">🔄</div>
+                        <div style="font-size: 12px;">Add Subscription</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Upcoming Bills</div>
+                    <div id="upcoming-bills">
+                        <div class="item">
+                            <div>
+                                <div class="item-name">Rent</div>
+                                <div class="item-date">Due Tomorrow</div>
+                            </div>
+                            <div class="item-amount">$200</div>
+                        </div>
+                        <div class="item">
+                            <div>
+                                <div class="item-name">Electricity</div>
+                                <div class="item-date">Due in 3 days</div>
+                            </div>
+                            <div class="item-amount">$80</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Upcoming Subscriptions</div>
+                    <div id="upcoming-subscriptions">
+                        <div class="item">
+                            <div>
+                                <div class="item-name">Spotify Premium</div>
+                                <div class="item-date">Monthly $12.99</div>
+                            </div>
+                            <div class="action-buttons">
+                                <button class="action-btn pause-btn" onclick="pauseSubscription(this)">Pause</button>
+                                <button class="action-btn cancel-btn" onclick="cancelSubscription(this)">Cancel</button>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div>
+                                <div class="item-name">Netflix</div>
+                                <div class="item-date">Monthly $15.99</div>
+                            </div>
+                            <div class="action-buttons">
+                                <button class="action-btn pause-btn" onclick="pauseSubscription(this)">Pause</button>
+                                <button class="action-btn cancel-btn" onclick="cancelSubscription(this)">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bills Screen -->
+        <div class="screen" id="bills-screen">
+            <div class="content">
+                <div class="header">
+                    <div class="title">Bills</div>
+                    <button class="add-button" onclick="showModal('add-bill-modal')">Add Bill</button>
+                </div>
+                <div id="bills-list">
+                    <div class="card">
+                        <div class="item">
+                            <div>
+                                <div class="item-name">Rent</div>
+                                <div class="item-date">Due Tomorrow - Housing</div>
+                            </div>
+                            <div class="item-amount">$200</div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="item">
+                            <div>
+                                <div class="item-name">Electricity</div>
+                                <div class="item-date">Due in 3 days - Utilities</div>
+                            </div>
+                            <div class="item-amount">$80</div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="item">
+                            <div>
+                                <div class="item-name">Phone Bill</div>
+                                <div class="item-date">Due in 5 days - Communication</div>
+                            </div>
+                            <div class="item-amount">$45</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subscriptions Screen -->
+        <div class="screen" id="subscriptions-screen">
+            <div class="content">
+                <div class="header">
+                    <div class="title">Subscriptions</div>
+                    <button class="add-button" onclick="showModal('add-subscription-modal')">Add Subscription</button>
+                </div>
+                <div id="subscriptions-list">
+                    <div class="card">
+                        <div class="item">
+                            <div style="flex: 1;">
+                                <div class="item-name">Spotify Premium</div>
+                                <div class="item-date">Monthly $12.99 - Entertainment</div>
+                            </div>
+                            <div class="action-buttons">
+                                <button class="action-btn pause-btn" onclick="pauseSubscription(this)">Pause</button>
+                                <button class="action-btn cancel-btn" onclick="cancelSubscription(this)">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="item">
+                            <div style="flex: 1;">
+                                <div class="item-name">Netflix</div>
+                                <div class="item-date">Monthly $15.99 - Entertainment</div>
+                            </div>
+                            <div class="action-buttons">
+                                <button class="action-btn pause-btn" onclick="pauseSubscription(this)">Pause</button>
+                                <button class="action-btn cancel-btn" onclick="cancelSubscription(this)">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="item">
+                            <div style="flex: 1;">
+                                <div class="item-name">Gym Membership</div>
+                                <div class="item-date">Monthly $25 - Health</div>
+                            </div>
+                            <div class="action-buttons">
+                                <button class="action-btn pause-btn" onclick="pauseSubscription(this)">Pause</button>
+                                <button class="action-btn cancel-btn" onclick="cancelSubscription(this)">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Forecast Screen -->
+        <div class="screen" id="forecast-screen">
+            <div class="content">
+                <div class="header">
+                    <div class="title">Monthly Forecast</div>
+                </div>
+                <div class="calendar">
+                    <div class="calendar-day">Sun</div>
+                    <div class="calendar-day">Mon</div>
+                    <div class="calendar-day">Tue</div>
+                    <div class="calendar-day">Wed</div>
+                    <div class="calendar-day">Thu</div>
+                    <div class="calendar-day">Fri</div>
+                    <div class="calendar-day">Sat</div>
+                    
+                    <div class="calendar-day">1</div>
+                    <div class="calendar-day">2</div>
+                    <div class="calendar-day">3</div>
+                    <div class="calendar-day">4</div>
+                    <div class="calendar-day">5</div>
+                    <div class="calendar-day">6</div>
+                    <div class="calendar-day">7</div>
+                    
+                    <div class="calendar-day">8</div>
+                    <div class="calendar-day">9</div>
+                    <div class="calendar-day">10</div>
+                    <div class="calendar-day">11</div>
+                    <div class="calendar-day">12</div>
+                    <div class="calendar-day">13</div>
+                    <div class="calendar-day">14</div>
+                    
+                    <div class="calendar-day">15</div>
+                    <div class="calendar-day">16</div>
+                    <div class="calendar-day">17</div>
+                    <div class="calendar-day">18</div>
+                    <div class="calendar-day">19</div>
+                    <div class="calendar-day">20</div>
+                    <div class="calendar-day">21</div>
+                    
+                    <div class="calendar-day">22</div>
+                    <div class="calendar-day">23</div>
+                    <div class="calendar-day">24</div>
+                    <div class="calendar-day">25</div>
+                    <div class="calendar-day">26</div>
+                    <div class="calendar-day">27</div>
+                    <div class="calendar-day">28</div>
+                    
+                    <div class="calendar-day">29</div>
+                    <div class="calendar-day">30</div>
+                    <div class="calendar-day">31</div>
+                    <div class="calendar-day"></div>
+                    <div class="calendar-day"></div>
+                    <div class="calendar-day"></div>
+                    <div class="calendar-day"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Today's Details</div>
+                    <div class="item">
+                        <span class="item-name">Rent</span>
+                        <span class="item-amount">$200</span>
+                    </div>
+                    <div class="item">
+                        <span class="item-name">Electricity</span>
+                        <span class="item-amount">$80</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Screen -->
+        <div class="screen" id="settings-screen">
+            <div class="content">
+                <div class="header">
+                    <div class="title">Settings</div>
+                </div>
+                
+                <div class="card">
+                    <div class="settings-item">
+                        <span>Language</span>
+                        <span style="color: #666;">English</span>
+                    </div>
+                    <div class="settings-item">
+                        <span>Currency</span>
+                        <span style="color: #666;">AUD</span>
+                    </div>
+                    <div class="settings-item">
+                        <span>Weekly Income</span>
+                        <span style="color: #666;">$500</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="settings-item">
+                        <span>Bill Reminders</span>
+                        <div class="switch active" onclick="toggleSwitch(this)"></div>
+                    </div>
+                    <div class="settings-item">
+                        <span>Subscription Alerts</span>
+                        <div class="switch active" onclick="toggleSwitch(this)"></div>
+                    </div>
+                    <div class="settings-item">
+                        <span>Spending Alerts</span>
+                        <div class="switch" onclick="toggleSwitch(this)"></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="settings-item">
+                        <span>Reset Data</span>
+                        <span style="color: #ef4444;">Reset</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Bar -->
+        <div class="tab-bar">
+            <div class="tab active" onclick="showScreen('dashboard-screen')">
+                <div class="tab-icon"></div>
+                <span>Home</span>
+            </div>
+            <div class="tab" onclick="showScreen('bills-screen')">
+                <div class="tab-icon"></div>
+                <span>Bills</span>
+            </div>
+            <div class="tab" onclick="showScreen('subscriptions-screen')">
+                <div class="tab-icon"></div>
+                <span>Subs</span>
+            </div>
+            <div class="tab" onclick="showScreen('forecast-screen')">
+                <div class="tab-icon"></div>
+                <span>Forecast</span>
+            </div>
+            <div class="tab" onclick="showScreen('settings-screen')">
+                <div class="tab-icon"></div>
+                <span>Settings</span>
+            </div>
+        </div>
+
+        <!-- Pigeon Bubble -->
+        <div class="bubble" onclick="showModal('quick-entry-modal')">+</div>
+
+        <!-- Add Bill Modal -->
+        <div class="modal" id="add-bill-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Add Bill</h3>
+                    <button class="close-btn" onclick="closeModal('add-bill-modal')">×</button>
+                </div>
+                
+                <div class="input-group">
+                    <label class="label">Bill Name</label>
+                    <input type="text" class="input" id="bill-name" placeholder="Enter bill name">
+                </div>
+                
+                <div class="input-group">
+                    <label class="label">Amount</label>
+                    <input type="number" class="input" id="bill-amount" placeholder="0.00">
+                </div>
+                
+                <div class="input-group">
+                    <label class="label">Due Date</label>
+                    <input type="date" class="input" id="bill-date">
+                </div>
+
+                <div class="category-grid">
+                    <button class="category-btn" onclick="selectCategory(this)">Housing</button>
+                    <button class="category-btn" onclick="selectCategory(this)">Utilities</button>
+                    <button class="category-btn" onclick="selectCategory(this)">Transport</button>
+                    <button class="category-btn" onclick="selectCategory(this)">Other</button>
+                </div>
+
+                <button class="button" onclick="addBill()">Save</button>
+                <button class="button secondary" onclick="closeModal('add-bill-modal')">Cancel</button>
+            </div>
+        </div>
+
+        <!-- Add Subscription Modal -->
+        <div class="modal" id="add-subscription-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Add Subscription</h3>
+                    <button class="close-btn" onclick="closeModal('add-subscription-modal')">×</button>
+                </div>
+                
+                <div class="input-group">
+                    <label class="label">Subscription Name</label>
+                    <input type="text" class="input" id="sub-name" placeholder="Enter subscription name">
+                </div>
+                
+                <div class="input-group">
+                    <label class="label">Amount</label>
+                    <input type="number" class="input" id="sub-amount" placeholder="0.00">
+                </div>
+                
+                <div class="input-group">
+                    <label class="label">Renewal Date</label>
+                    <input type="date" class="input" id="sub-date">
+                </div>
+
+                <div class="category-grid">
+                    <button class="category-btn" onclick="selectCategory(this)">Entertainment</button>
+                    <button class="category-btn" onclick="selectCategory(this)">Software</button>
+                    <button class="category-btn" onclick="selectCategory(this)">Health</button>
+                    <button class="category-btn" onclick="selectCategory(this)">Other</button>
+                </div>
+
+                <button class="button" onclick="addSubscription()">Save</button>
+                <button class="button secondary" onclick="closeModal('add-subscription-modal')">Cancel</button>
+            </div>
+        </div>
+
+        <!-- Quick Entry Modal -->
+        <div class="modal" id="quick-entry-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Quick Spending Entry</h3>
+                    <button class="close-btn" onclick="closeModal('quick-entry-modal')">×</button>
+                </div>
+                
+                <div class="input-group">
+                    <label class="label">Planned Amount</label>
+                    <input type="number" class="input" id="quick-amount" placeholder="0.00">
+                </div>
+                
+                <div class="category-grid">
+                    <button class="category-btn selected" onclick="selectCategory(this)">Food</button>
+                    <button class="category-btn" onclick="selectCategory(this)">Transport</button>
+                    <button class="category-btn" onclick="selectCategory(this)">Entertainment</button>
+                    <button class="category-btn" onclick="selectCategory(this)">Shopping</button>
+                </div>
+                
+                <div class="input-group">
+                    <label class="label">Note (Optional)</label>
+                    <input type="text" class="input" id="quick-note" placeholder="Add note...">
+                </div>
+
+                <button class="button" onclick="addQuickEntry()">Save</button>
+                <button class="button secondary" onclick="closeModal('quick-entry-modal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // App State
+        let currentScreen = 'login-screen';
+        let safeToSpendAmount = 262;
+        let weeklyIncome = 500;
+        let bills = [];
+        let subscriptions = [];
+        let plannedSpending = [];
+
+        // Screen Navigation
+        function showScreen(screenId) {
+            // Hide all screens
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            
+            // Show target screen
+            document.getElementById(screenId).classList.add('active');
+            currentScreen = screenId;
+            
+            // Update tab bar
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            if (screenId === 'dashboard-screen') {
+                document.querySelector('.tab:nth-child(1)').classList.add('active');
+            } else if (screenId === 'bills-screen') {
+                document.querySelector('.tab:nth-child(2)').classList.add('active');
+            } else if (screenId === 'subscriptions-screen') {
+                document.querySelector('.tab:nth-child(3)').classList.add('active');
+            } else if (screenId === 'forecast-screen') {
+                document.querySelector('.tab:nth-child(4)').classList.add('active');
+            } else if (screenId === 'settings-screen') {
+                document.querySelector('.tab:nth-child(5)').classList.add('active');
+            }
+        }
+
+        // Modal Functions
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Authentication
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (username && password) {
+                showScreen('dashboard-screen');
+            } else {
+                alert('Please enter username and password');
+            }
+        }
+
+        function signup() {
+            const fullname = document.getElementById('fullname').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            if (fullname && email && password && confirmPassword) {
+                if (password === confirmPassword) {
+                    showScreen('dashboard-screen');
+                } else {
+                    alert('Passwords do not match');
+                }
+            } else {
+                alert('Please fill in all fields');
+            }
+        }
+
+        // Category Selection
+        function selectCategory(button) {
+            // Remove selected class from siblings
+            button.parentNode.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked button
+            button.classList.add('selected');
+        }
+
+        // Add Bill
+        function addBill() {
+            const name = document.getElementById('bill-name').value;
+            const amount = parseFloat(document.getElementById('bill-amount').value);
+            const date = document.getElementById('bill-date').value;
+            
+            if (name && amount && date) {
+                const bill = {
+                    id: Date.now(),
+                    name: name,
+                    amount: amount,
+                    date: date,
+                    category: document.querySelector('#add-bill-modal .category-btn.selected').textContent
+                };
+                
+                bills.push(bill);
+                updateSafeToSpend();
+                closeModal('add-bill-modal');
+                
+                // Clear form
+                document.getElementById('bill-name').value = '';
+                document.getElementById('bill-amount').value = '';
+                document.getElementById('bill-date').value = '';
+                
+                alert('Bill added successfully!');
+            } else {
+                alert('Please fill in all fields');
+            }
+        }
+
+        // Add Subscription
+        function addSubscription() {
+            const name = document.getElementById('sub-name').value;
+            const amount = parseFloat(document.getElementById('sub-amount').value);
+            const date = document.getElementById('sub-date').value;
+            
+            if (name && amount && date) {
+                const subscription = {
+                    id: Date.now(),
+                    name: name,
+                    amount: amount,
+                    date: date,
+                    category: document.querySelector('#add-subscription-modal .category-btn.selected').textContent
+                };
+                
+                subscriptions.push(subscription);
+                updateSafeToSpend();
+                closeModal('add-subscription-modal');
+                
+                // Clear form
+                document.getElementById('sub-name').value = '';
+                document.getElementById('sub-amount').value = '';
+                document.getElementById('sub-date').value = '';
+                
+                alert('Subscription added successfully!');
+            } else {
+                alert('Please fill in all fields');
+            }
+        }
+
+        // Add Quick Entry
+        function addQuickEntry() {
+            const amount = parseFloat(document.getElementById('quick-amount').value);
+            const category = document.querySelector('#quick-entry-modal .category-btn.selected').textContent;
+            const note = document.getElementById('quick-note').value;
+            
+            if (amount) {
+                const entry = {
+                    id: Date.now(),
+                    amount: amount,
+                    category: category,
+                    note: note,
+                    date: new Date().toISOString()
+                };
+                
+                plannedSpending.push(entry);
+                updateSafeToSpend();
+                closeModal('quick-entry-modal');
+                
+                // Clear form
+                document.getElementById('quick-amount').value = '';
+                document.getElementById('quick-note').value = '';
+                
+                alert('Planned spending added!');
+            } else {
+                alert('Please enter an amount');
+            }
+        }
+
+        // Update Safe to Spend
+        function updateSafeToSpend() {
+            let totalBills = 0;
+            let totalSubscriptions = 0;
+            let totalPlanned = 0;
+            
+            // Calculate totals (simplified calculation)
+            bills.forEach(bill => totalBills += bill.amount);
+            subscriptions.forEach(sub => totalSubscriptions += sub.amount);
+            plannedSpending.forEach(planned => totalPlanned += planned.amount);
+            
+            safeToSpendAmount = weeklyIncome - totalBills - totalSubscriptions - totalPlanned;
+            
+            document.getElementById('safe-to-spend-amount').textContent = '$' + safeToSpendAmount;
+        }
+
+        // Subscription Actions
+        function pauseSubscription(button) {
+            if (button.textContent === 'Pause') {
+                button.textContent = 'Resume';
+                button.style.background = '#10b981';
+            } else {
+                button.textContent = 'Pause';
+                button.style.background = '#f59e0b';
+            }
+        }
+
+        function cancelSubscription(button) {
+            if (button.textContent === 'Cancel') {
+                button.textContent = 'Restore';
+                button.style.background = '#10b981';
+            } else {
+                button.textContent = 'Cancel';
+                button.style.background = '#ef4444';
+            }
+        }
+
+        // Settings
+        function toggleSwitch(switchElement) {
+            switchElement.classList.toggle('active');
+        }
+
+        // Close modals when clicking outside
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        });
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set today's date as default for date inputs
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('bill-date').value = today;
+            document.getElementById('sub-date').value = today;
+        });
+    </script>
+</body>
+</html>
+
